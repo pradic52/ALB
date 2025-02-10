@@ -1,0 +1,54 @@
+<div class="image-container">
+{% if widget.is_initial %}
+    <img src="{{ widget.value.url }}" alt="Image preview" style="max-width: 200px; max-height: 200px;">
+    {% if not widget.is_required %}
+        <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}">
+        <label for="{{ widget.checkbox_id }}">{{ widget.checkbox_label }}</label>
+    {% endif %}
+{% endif %}
+<input type="file" name="{{ widget.name }}" class="custom-image-input" accept="image/*" id="id_image">
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+const fileInputs = document.querySelectorAll(".custom-image-input");
+
+fileInputs.forEach((fileInput) => {
+const container = fileInput.closest(".image-container"); // Cherche un conteneur parent avec la classe "image-container"
+
+// Vérifie si le conteneur est null
+if (!container) {
+console.error("Impossible de trouver un conteneur parent avec '.image-container' pour cet input :", fileInput);
+return; // Arrête l'exécution pour cet input et passe au suivant
+}
+
+const previewImage = container.querySelector("img");
+if (previewImage) {
+fileInput.addEventListener("change", function (event) {
+const file = event.target.files[0];
+
+if (file && file.type.startsWith("image/") && file.size <= 5 * 1024 * 1024) {
+const reader = new FileReader();
+
+reader.onload = function (e) {
+previewImage.src = ""; // Efface l'ancienne image
+previewImage.src = e.target.result; // Ajoute l'image sélectionnée
+previewImage.alt = "Aperçu de l'image téléchargée"; // Ajoute une description
+};
+
+// Gestion des erreurs lors de la lecture du fichier
+reader.onerror = function () {
+console.error("Erreur lors de la lecture du fichier !");
+alert("Une erreur est survenue lors de la lecture du fichier.");
+};
+
+reader.readAsDataURL(file);
+} else {
+alert("Fichier invalide ou taille trop grande (max 5 Mo) !");
+}
+});
+} else {
+console.warn("Aucune balise <img> trouvée dans le conteneur :", container);
+}
+});
+});
+</script>

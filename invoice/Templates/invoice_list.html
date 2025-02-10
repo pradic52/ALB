@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="container">
+    <table class="table table-striped-columns">
+            <caption class="text-bg-light text-center">Liste des factures</caption>
+            <thead class="thead">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Client</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in invoices %}
+                <tr class="{% cycle 'table-active' '' %}
+                    {% if invoice.delivered and invoice.status == 2 %}
+                        table-success
+                    {% elif invoice.status == 1 %}
+                        table-warning
+                    {% elif invoice.status == 3 and invoice.delivered %}
+                        table-info
+                    {% else %}
+                        table-danger
+                    {% endif %}">
+
+                    <th scope="row"><a href="{% url 'invoice_detail' invoice.id %}">{{ invoice.id }}</a></th>
+                    <td><time>{{ invoice.date | date:"d/m/Y H:i" }}</time></td>
+                    <td>{{ invoice.customer }}</td>
+                    <td>{{ invoice.total }}</td>
+                    <td>
+                        {% if invoice.status != 3 %}
+                            <a href="{% url 'print_invoice' invoice.id %}" target="_blank" class="btn btn-primary">
+                                Imprimer
+                            </a>
+                        {% endif %}
+
+                        {% if not invoice.delivered and invoice.status != 3  %}
+                            <a href="{% url 'mark_delivered' invoice.id %}" class="btn btn-success">
+                                Livré
+                            </a>
+                            {% elif invoice.status == 3 and invoice.delivered %}
+                            <span class="badge bg-info">En attente du retour ...</span>
+                            {% elif invoice.status == 3 and not invoice.delivered %}
+                            <span class="badge bg-info">à été retourné</span>
+                        {% else %}
+                            <span class="badge bg-success">A été livré</span>
+                        {% endif %}
+
+                        {% if invoice.status == 1 %}
+                            <a href="{% url 'mark_paid' invoice.id %}" class="btn btn-success">
+                                Paiement
+                            </a>
+                        {% elif invoice.status == 2 %}
+                            <span class="badge bg-success">💲A payé</span>
+                        {% endif %}
+
+                        {% if invoice.status != 3 %}
+                            <a href="{% url 'mark_cancelled' invoice.id %}" class="btn btn-danger">
+                                Annuler
+                            </a>
+                        {% elif invoice.status == 3 and invoice.delivered %}
+                            <a href="{% url 'mark_undelivered' invoice.id %}" class="btn btn-warning">
+                                avez vous retourné les produits ?
+                            </a>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="error">
+
+    </div>
+    {% include "paginator.html" %}
+{% endblock %}

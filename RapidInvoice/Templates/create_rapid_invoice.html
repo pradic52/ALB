@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Facture rapide{% endblock %}
+{% block content %}
+    <h1 class="text-center">Facture rapide</h1>
+    <p class="text-center">
+    Créer une facture rapide pour un client.
+    </p>
+
+    <div class="d-grid gap-2 col-6 mx-auto">
+      <button class="btn btn-primary" id="open-form" type="button">Commencer</button>
+      <button class="btn btn-outline-danger" id="return">Annuler</button>
+    </div>
+
+    <script>
+        document.getElementById("return").addEventListener("click", function(){
+            window.location.href = "{% url 'home' %}";
+        });
+        document.getElementById("open-form").addEventListener("click", function(){
+            window.location.href = "{% url 'start_rapid_invoice' %}";
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load displayquantity %}
+{% block title %}Inventaire{% endblock %}
+{% block content %}
+{% include 'investigatory.html' %}
+
+    <div class="hstack gap-3">
+        <div class="p-2">
+            <h1>Inventaire</h1>
+
+            {% if is_entered %}
+                date : {{ date_entered }}
+            {% else %}
+                <p>Bienvenue sur le site d'inventaire</p>
+                <p>Vous pouvez voir les produits disponibles ici</p>
+            {% endif %}
+        </div>
+        <div class="p-2 ms-auto">
+            <form action="{% url 'inventory' %}" method="post">
+            {% csrf_token %}
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control" name="date" value="{% now 'Y-m-d' %}" id="date" min="{% if oldest_record %}{{ oldest_record.date|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}" max="{% now 'Y-m-d' %}">
+                <input type="submit" class="btn btn-primary" value="Afficher">
+            </form>
+            {% if error %}
+                <span class="text-danger">{{ error }}</span>
+                <a href="{% url 'inventory' %}"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466"/>
+                </svg></a>
+
+            {% endif %}
+        </div>
+    </div>
+
+    <table class="table">
+    <thead class="thead-light">
+        <tr>
+            <th scope="col">Produit</th>
+            <th scope="col">ajout ou réduire</th>
+            <th scope="col">Entré</th>
+            <th scope="col">Sortie</th>
+            <th scope="col">Entré/Sortie</th>
+            <th scope="col">Quantité départ</th>
+            <th scope="col">Quantité </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in inventory_data %}
+                <tr>
+                    <td>{{ item.product.product }}</td>
+                    <td>
+                        {% if not is_entered %}
+                        <form action="{% url 'add_inventory' %}" method="post" class="row g-3">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="product_id" id="product_id" value="{{ item.product.id }}">
+                        <div class="col-auto">
+                            <div class="input-group mb-auto">
+                                <div class="input-group-text">
+                                    <input class="form-check-input mt-0 is-pack-checkbox" type="checkbox" aria-label="le pack ou par unité" name="is_pack" value="1" data-index="{{ forloop.counter }}" id="is_pack" checked>
+                                </div>
+                                <input type="number" class="form-control quantity-input"
+                                       data-end-min="{{ item.end_quantity.0|default:0|multiply:-1 }}"
+                                       data-quantity-row="{{ item.product.quantity_row|default:0|multiply:-1 }}"
+                                       min="{{ item.end_quantity.0|default:0|multiply:-1 }}" aria-label="quantité à ajouté"
+                                       name="quantity" value="0" data-index="{{ forloop.counter }}" id="quantity">
+                                <span class="input-group-text helpUser" id="basic-addon2" data-index="{{ forloop.counter }}">pack</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <input type="submit" class="btn btn-outline-primary" value="✔️">
+                            <input type="reset" class="btn btn-outline-danger" value="❌">
+                        </div>
+                    </form>
+
+
+                        <script>
+                            function update_min_value(checkbox) {
+                            const index = checkbox.getAttribute('data-index');
+                            const quantityInput = document.querySelector(`.quantity-input[data-index="${index}"]`);
+                            let helper = document.querySelector(`.helpUser[data-index="${index}"]`);
+                            if (checkbox.checked) {
+                                quantityInput.min = quantityInput.getAttribute('data-end-min');
+                                helper.innerHTML = "pack"
+                            } else {
+                                quantityInput.min = quantityInput.getAttribute('data-quantity-row');
+                                helper.innerHTML = "{{ item.product.product.type }}".slice(0, 4);
+                            }
+
+                            console.log("Checkbox is checked: ", checkbox.checked);
+                            console.log("Min value: ", quantityInput.min);
+                        }
+
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const checkboxes = document.querySelectorAll('.is-pack-checkbox');
+                            checkboxes.forEach(function (checkbox) {
+                                checkbox.addEventListener('change', function () {
+                                    update_min_value(this);
+                                });
+
+                                // Initial state for each checkbox
+                                update_min_value(checkbox);
+                            });
+                        });
+
+                        </script>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.total_add }}</td>
+                    <td>{{ item.total_sale }}</td>
+                    <td>{{ item.total_transactions }}</td>
+                    <td>{{ item.start_quantity.0 }} pack(s)
+                        {% if item.start_quantity.1 %}
+                        et {{ item.start_quantity.1 }} {{ item.product.product.type }}
+                        {% endif %}
+
+                    </td>
+
+                    <td>{{ item.end_quantity.0 }} pack(s)
+                        {% if item.end_quantity.1 %}
+                        et {{ item.end_quantity.1 }} {{ item.product.product.type }}</td>
+                        {% endif %}
+                </tr>
+            {% endfor %}
+    </tbody>
+
+    </table>
+    <div class="">
+    <h2>Total</h2>
+    <span class="border-info">{{ money }} {{ currency }}</span>
+    </div>
+
+    <p>{% if error_add %}{{ error_add }}{% endif %}</p>
+
+{% endblock %}

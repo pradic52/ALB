@@ -1,0 +1,39 @@
+{% load pagination_tags %}
+<nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a href="?page={{ page_obj.previous_page_number }}" class="page-link" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+        {% endif %}
+        <!-- configuration d'une meilleur pagination -->
+            {% if page_obj.paginator.num_pages < 20 %}
+            {% for i in page_obj.paginator.page_range %}
+                <li
+                {% if i == page_obj.number %}
+                    class="page-item active" aria-current="page">
+                {% else %}
+                    class="page-item">
+                {% endif %}
+                <a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                </li>
+            {% endfor %}
+            {% else %}
+            {% get_pagination_pages page_obj.number page_obj.paginator.num_pages as pages %}
+            {% for i in pages %}
+                <!-- Même code que précédemment -->
+                <li
+                {% if i == '...' %}
+                    class="page-item disabled"><a href="#" class="page-link">...</a>
+                {% elif i == page_obj.number %}
+                    class="page-item active" aria-current="page"><a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                {% else %}
+                    class="page-item"><a href="?page={{ i }}" class="page-link">{{ i }}</a>
+                {% endif %}
+
+                </li>
+            {% endfor %}
+        {% endif %}
+        {% if page_obj.has_next %}
+            <li class="page-item"><a href="?page={{ page_obj.next_page_number }}" class="page-link" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+        {% endif %}
+    </ul>
+ </nav>

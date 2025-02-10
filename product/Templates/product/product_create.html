@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Création de produit{% endblock %}
+{% block content %}
+
+    <form method="post">
+    {% csrf_token %}
+        {{ form.as_div }}
+        <input value="Annuler" type="button" onclick="window.location.href='{% url 'product_list' %}'">
+        <input type="submit" value="Creer">
+    </form>
+{% endblock %}

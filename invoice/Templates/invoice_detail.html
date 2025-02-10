@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Facture : {{ invoice.id }}</h1>
+    <p>Date : {{ invoice.date }}</p>
+
+    <h2>Éléments de la facture</h2>
+    <table class="table table-dark table-striped-columns">
+        <thead>
+        <tr>
+            <th scope="col">Produit</th>
+            <th scope="col">Quantité</th>
+            <th scope="col">Prix unitaire</th>
+            <th scope="col">Total</th>
+        </tr>
+        </thead>
+        <tbody class="bg-secondary">
+        {% for item in items %}
+            <tr>
+                <td>{% if item.item %}
+                    {{ item.item }}
+                    {% else %}
+                    {{ item.delete_item_name }}
+                    {% endif %}
+
+                </td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.total }}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3">Total</td>
+            <td>{{ invoice.total }}</td>
+        </tbody>
+    </table>
+    <a href="{% url 'invoice_list' %}"> &lt;-retoure</a>
+{% endblock %}

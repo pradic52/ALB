@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caisse - Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container-fluid vh-100 d-flex">
+        <!-- Sidebar -->
+        <div class="col-md-3 bg-dark text-white p-4 d-flex flex-column">
+            <h1 class="h4">{{ company_name }}</h1>
+            <nav class="mt-4">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a href="#" class="nav-link text-white">🗺️ Plan de salle</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white">🔒 Bloquer</a></li>
+                    <li class="nav-item"><a href="#" class="nav-link text-white">⚙️ Autres actions</a></li>
+                </ul>
+            </nav>
+
+            <!-- Liste des factures rapides -->
+            <h2 class="mt-4 h6">Facture</h2>
+            <ul class="list-group">
+                {% for invoice in rapid_invoice %}
+                <li class="list-group-item bg-primary text-white">{{ invoice.id }} - {{ invoice.date }}</li>
+                {% endfor %}
+            </ul>
+
+            <!-- Liste des serveurs -->
+            <h2 class="mt-4 h6">Serveurs</h2>
+            <ul class="list-group">
+                <li class="list-group-item bg-danger text-white">{{ user.username }}</li>
+            </ul>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="col-md-9 p-4">
+            <div class="row g-2" id="product-buttons">
+                <!-- Affichage des produits disponibles -->
+                {% for inventory in inventorie %}
+                <button class="col btn btn-{% if inventory.is_below_threshold %}warning{% else %}primary{% endif %}" data-name="{{ inventory.id }}|{{ inventory.product }}" data-price="{{ inventory.product.price }}" data-discount-price="{{ inventory.product.discount_price }}">
+                    {{ inventory.id }}|{{ inventory.product }} - {{ inventory.product.price }}{{ currency|default:'€' }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Zone de commande -->
+            <div class="mt-4 bg-white p-4 shadow-sm rounded">
+                <h2 class="h5">Produits</h2>
+                <form method="POST" action="{% url "enter_data" %}">
+                    {% csrf_token %}
+                    <ul id="ticket-list" class="list-group"></ul>
+                    <input type="hidden" name="order_data" id="order_data">
+                    <h3 class="h6 mt-3">Total: <span id="total">0.00{{ currency|default:'€' }}</span></h3>
+                    <button type="submit" class="btn btn-success mt-2">Paiement</button>
+                    <a href="{% url "home" %}" class="btn btn-secondary mt-2">Annuler</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let total = 0;
+        let ticketItems = {};
+
+        // Gestion du clic sur un produit
+        document.querySelectorAll("#product-buttons button").forEach(button => {
+            button.addEventListener("click", function () {
+                const name = this.getAttribute("data-name");
+                const basePrice = parseFloat(this.getAttribute("data-price"));
+                const discountPrice = parseFloat(this.getAttribute("data-discount-price"));
+
+                if (!ticketItems[name]) {
+                    ticketItems[name] = { quantity: 1, price: basePrice };
+                } else {
+                    ticketItems[name].quantity++;
+                    if (ticketItems[name].quantity >= 10) {
+                        ticketItems[name].price = discountPrice;
+                    }
+                }
+                updateTicket();
+            });
+        });
+
+        // Mise à jour de l'affichage du ticket
+        function updateTicket() {
+            let ticketHTML = "";
+            total = 0;
+            for (let name in ticketItems) {
+                let item = ticketItems[name];
+                total += item.quantity * item.price;
+                ticketHTML += `<li class='list-group-item d-flex justify-content-between align-items-center'>
+                    ${name} <input type='number' step='0.01' min='0' value='${item.quantity}' class='form-control form-control-sm w-25 d-inline' onchange='setQuantity("${name}", this.value)'> - ${(item.quantity * item.price).toFixed(2).replace(/\.00$/, '')}{{ currency|default:'€' }}
+                    <div>
+                        <button class='btn btn-sm btn-outline-success' onclick='changeQuantity("${name}", 1)'>+</button>
+                        <button class='btn btn-sm btn-outline-warning' onclick='changeQuantity("${name}", -1)'>-</button>
+                        <button class='btn btn-sm btn-outline-danger' onclick='removeItem("${name}")'>🗑</button>
+                    </div>
+                </li>`;
+            }
+            document.getElementById("ticket-list").innerHTML = ticketHTML;
+            document.getElementById("total").textContent = total.toFixed(2).replace(/\.00$/, '') + "{{ currency|default:'€' }}";
+            document.getElementById("order_data").value = JSON.stringify(ticketItems);
+        }
+
+        // Modification de la quantité d'un produit
+        function changeQuantity(name, amount) {
+            if (ticketItems[name]) {
+                ticketItems[name].quantity += amount;
+                if (ticketItems[name].quantity <= 0) {
+                    delete ticketItems[name];
+                } else if (ticketItems[name].quantity >= 10) {
+                    ticketItems[name].price = parseFloat(document.querySelector(`[data-name='${name}']`).getAttribute("data-discount-price"));
+                }
+                updateTicket();
+            }
+        }
+
+        // Définir une quantité précise
+        function setQuantity(name, value) {
+            let qty = parseFloat(value);
+            if (!isNaN(qty) && qty > 0) {
+                ticketItems[name].quantity = qty;
+                if (qty >= 10) {
+                    ticketItems[name].price = parseFloat(document.querySelector(`[data-name='${name}']`).getAttribute("data-discount-price"));
+                }
+            } else {
+                delete ticketItems[name];
+            }
+            updateTicket();
+        }
+
+        // Suppression d'un produit du ticket
+        function removeItem(name) {
+            delete ticketItems[name];
+            updateTicket();
+        }
+    </script>
+    <script>
+        // Affichage du message d'erreur
+        function showError(message) {
+            document.getElementById("message-container").innerHTML = `<div class="alert alert-danger" role="alert">${message}</div>`;
+        }
+        // Affichage du succès du paiement
+        function showSuccess(message) {
+            document.getElementById("message-container").innerHTML = `<div class="alert alert-success" role="alert">${message}</div>`;
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

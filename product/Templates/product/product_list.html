@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des produits{% endblock %}
+
+{% block content %}
+{% include 'investigatory.html' %}
+<h1>Liste des produits</h1>
+<div class="row justify-content-md-center">
+<!-- Bouton pour afficher le formulaire -->
+    <div class="col col-lg-2">
+        <button id="show-form-btn" class="btn btn-primary">Ajouter un produit</button>
+    </div>
+</div>
+    <div class="row">
+
+<div class="col">
+<table class="table table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Prix</th>
+            <th>Prix Grossiste</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td class="bg-primary-subtle">
+                    <a href="{% url 'product_update' product.id %}" style="text-decoration-line: none">
+                        {{ product.name }} {{ product.type }}
+                    </a>
+                </td>
+                <td>{{ product.price }}</td>
+                <td>{{ product.price_big_customer }}</td>
+                <td>
+                    <p class="d-flex justify-content-between">
+                    <span>
+                        {% if product.alcoholic %}
+                            Il contient de l'alcool
+                            {% if product.recycling %}
+                            et il est recyclable
+                        {% else %}
+                            mais il n'est pas recyclable
+                        {% endif %}
+                        {% else %}
+                            Il ne contient pas d'alcool
+                            {% if product.recycling %}
+                             mais il est recyclable
+                        {% else %}
+                            et il n'est pas recyclable
+                        {% endif %}
+                        {% endif %}
+                    </span>
+                    <button class="btn btn-danger justify-content-end" onclick="window.location.href='{% url 'product_delete' product.id %}'">Supprimer</button>
+                    </p>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<!-- Formulaire de création (caché par défaut) -->
+<div id="product-form-container" style="display: none;" class="col col-auto">
+    <form id="product-form" method="post">
+        {% csrf_token %}
+        {{ form.as_div }}
+        <input type="button" value="Annuler" onclick="cancelbutton()" class="btn btn-secondary">
+        <button type="submit" class="btn btn-primary btn-md">Créer</button>
+    </form>
+    <p id="error-message" style="color: red;"></p>
+</div>
+    </div>
+<script>
+    const productCreateUrl = "{% url 'product_create' %}";
+    function productDeleteUrl(value) {
+        return "{% url 'product_delete' 0 %}".replace('0', value);
+    }
+</script>
+
+<script src="{% static 'create_product.js' %}"></script>
+
+<script>
+    function cancelbutton() {
+        document.getElementById("product-form-container").style.display = "none";
+    }
+</script>
+{% endblock %}

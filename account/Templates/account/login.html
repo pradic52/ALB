@@ -1,0 +1,245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr-Fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <style>
+        /* General body styling for centering and background */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #89f7fe, #66a6ff);
+            font-family: Arial, sans-serif;
+            transition: background 0.5s ease;
+        }
+
+        /* Dark mode background */
+        body.dark-mode {
+            background: linear-gradient(135deg, #2e3a47, #1e252e);
+        }
+
+        /* Styling for the glass effect container */
+        .glass {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            transition: background 0.5s ease, border 0.5s ease;
+        }
+
+        /* Dark mode glass effect */
+        .dark-mode .glass {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.6);
+        }
+
+        /* Header styling */
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+            transition: color 0.5s ease;
+        }
+
+        /* Dark mode header text */
+        .dark-mode h1 {
+            color: #cfd8dc;
+        }
+
+        /* Form layout */
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Container for input and toggle icon */
+        .input-group {
+            position: relative;
+        }
+
+        /* General styling for input fields */
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background 0.5s ease, color 0.5s ease, border 0.5s ease;
+        }
+
+        /* Dark mode input fields */
+        .dark-mode input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.6);
+            color: #cfd8dc;
+        }
+
+        /* Highlight input field on focus */
+        input:focus {
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* Dark mode focus styling */
+        .dark-mode input:focus {
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Icon to toggle password visibility */
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #fff;
+            transition: color 0.5s ease;
+        }
+
+        /* Dark mode toggle password icon */
+        .dark-mode .toggle-password {
+            color: #cfd8dc;
+        }
+
+        /* Styling for the submit button */
+        button {
+            padding: 10px;
+            background: #66a6ff;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        /* Change button color on hover */
+        button:hover {
+            background: #89f7fe;
+        }
+
+        /* Dark mode submit button */
+        .dark-mode button {
+            background: #4f5b66;
+        }
+
+        /* Error message styling */
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            transition: background 0.5s ease, color 0.5s ease;
+        }
+
+        /* Dark mode error message */
+        .dark-mode .error {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ff8a8a;
+        }
+
+        /* Dark mode toggle button */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.5s ease;
+        }
+
+        .dark-mode .dark-mode-toggle {
+            background: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌞</button>
+    <div class="glass">
+        <h1>Connection</h1>
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Input for username field -->
+            <div class="input-group">
+                {{ form.username }}
+            </div>
+
+            <!-- Input for password field with toggle icon -->
+            <div class="input-group">
+                {{ form.password }}
+                <span class="toggle-password" onclick="togglePasswordVisibility()">👁</span>
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit">Entrer</button>
+
+            <!-- Display errors if form validation fails -->
+            {% if form.errors %}
+                <div class="error">
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <script>
+        // Toggles the visibility of the password field
+        function togglePasswordVisibility() {
+            const passwordField = document.querySelector('input[name="password"]');
+            const toggleIcon = document.querySelector('.toggle-password');
+
+            // Switch between text and password types
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.textContent = '🙈'; // Change icon to closed eye
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.textContent = '👁'; // Change icon to open eye
+            }
+        }
+
+        // Toggles between light and dark mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const toggleButton = document.querySelector('.dark-mode-toggle');
+            // Change icon and tooltip text
+            if (document.body.classList.contains('dark-mode')) {
+                toggleButton.textContent = '🌙';
+            } else {
+                toggleButton.textContent = '🌞';
+            }
+        }
+    </script>
+</body>
+</html>

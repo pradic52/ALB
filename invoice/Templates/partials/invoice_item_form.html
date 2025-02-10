@@ -1,0 +1,8 @@
+<!-- Utiliser __prefix__ pour les IDs et noms dynamiques -->
+<div class="d-flex justify-content-between align-items-center mb-2 container invoice-item">
+    {{ form.as_div | safe }}
+
+    <div class="col-md-1">
+        <output class="product-total form-control">0.00</output>
+    </div>
+</div>

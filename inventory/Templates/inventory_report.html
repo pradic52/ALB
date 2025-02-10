@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rapport d'Inventaire</title>
+</head>
+<body>
+    <h1>Rapport d'Inventaire</h1>
+
+    <form method="get">
+        <label for="date">Sélectionner une date :</label>
+        <input type="date" id="date" name="date" value="{{ date_entered }}">
+        <button type="submit">Filtrer</button>
+    </form>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Total des Transactions</th>
+                <th>Quantité Départ</th>
+                <th>Quantité Fin</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory_data %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.total_transactions }}</td>
+                    <td>{{ item.start_quantity }}</td>
+                    <td>{{ item.end_quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% load static %}
+{% load filtre %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="{% url 'home' %}">
+            <img src="{% static "pictures/DALL·E 2025-01-24 11.56.48 - A professional logo featuring the uppercase letters 'AL' with a bold and modern design. The background is a dark blue color, and the letters have whit.webp" %}" alt="{{ company_name }}" width="30" height="24" class="d-inline-block align-text-top"> {{ company_name | initial }}
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#"></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'invoice_create' %}active{% endif %}" href="{% url 'invoice_create' %}">Créer une Facture</a>
+              </li>
+                <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'show_rapid_invoice' %}active{% endif %}" href="{% url 'show_rapid_invoice' %}">Facture Rapide</a>
+                </li>
+                {% if user.is_authenticated %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  {{ user.username }}
+                </a>
+                <ul class="dropdown-menu">
+
+                  <li><a class="dropdown-item" href="{% url 'logout' %}"><img src="{% static 'person-dash-fill.svg' %}" alt="" width="20" height="20" class="d-inline-block align-text-top"> Déconnection</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#"><img src="{% static 'gear-wide-connected.svg' %}" width="20" height="20" class="d-inline-block align-text-top" alt=""> Paramètre...</a></li>
+                </ul>
+              </li>
+                {% else %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle icon-link-hover" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src="{% static "person-circle.svg" %}" alt="user" width="20" height="20" class="d-inline-block align-text-top"> Connexion
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="{% url 'login' %}"><img src="{% static 'person-fill.svg' %}" alt="" width="20" height="20" class="d-inline-block align-text-top"> connection</a></li>
+                  <li><a class="dropdown-item" href="#"><img src="{% static 'person-add.svg' %}" width="20" height="20" class="d-inline-block align-text-top" alt=""> Inscription</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#"><img src="{% static 'gear-wide-connected.svg' %}" width="20" height="20" class="d-inline-block align-text-top" alt=""> Paramètre...</a></li>
+                </ul>
+              </li>
+                {% endif %}
+
+
+              <li class="nav-item">
+                <a class="nav-link disabled" aria-disabled="true">Disabled</a>
+              </li>
+            </ul>
+
+            <form class="d-flex" role="search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
+      </nav>
